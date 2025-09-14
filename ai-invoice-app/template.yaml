@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Backend for the AI Conversational Invoice Generator
+
+Globals:
+  Function:
+    Timeout: 15
+    MemorySize: 256
+    Runtime: python3.12
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        DYNAMODB_TABLE: !Ref InvoiceAppTable
+
+Resources:
+  InvoiceAppTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: InvoiceApp
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            JwtConfiguration:
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}"
+              audience:
+                - !Ref UserPoolClientId
+            IdentitySource: "$request.header.Authorization"
+        DefaultAuthorizer: CognitoAuthorizer
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowHeaders:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+
+  CreateProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/profile/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref InvoiceAppTable
+      Events:
+        CreateProfileApi:
+          Type: HttpApi
+          Properties:
+            Path: /profile
+            Method: post
+            ApiId: !Ref HttpApi
+
+  ConversationHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/conversation/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref InvoiceAppTable
+        - Statement:
+          - Effect: Allow
+            Action:
+              - bedrock:InvokeModel
+            Resource: !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0'
+      Events:
+        ConversationApi:
+          Type: HttpApi
+          Properties:
+            Path: /conversation
+            Method: post
+            ApiId: !Ref HttpApi          
+
+Parameters:
+  UserPoolId:
+    Type: String
+    Description: The User Pool ID from your Cognito deployment.
+  UserPoolClientId:
+    Type: String
+    Description: The User Pool Client ID from your Cognito deployment.
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com" # CORRECTED LINE
