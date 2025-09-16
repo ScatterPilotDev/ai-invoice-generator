@@ -1,0 +1,72 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import ChatInput from '@/components/ChatInput';
+import MessageHistory, { Message } from '@/components/MessageHistory';
+import Sidebar from '@/app/components/Sidebar';
+
+export default function ChatPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const initialPrompt = searchParams.get('prompt');
+    if (initialPrompt) {
+      handleSendMessage(initialPrompt);
+    }
+  }, []);
+
+  const handleSendMessage = async (userMessage: string) => {
+    const newUserMessage: Message = { sender: 'user', content: userMessage };
+    setMessages(prevMessages => [...prevMessages, newUserMessage]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('YOUR_API_GATEWAY_URL/invoices', { // <-- IMPORTANT: REPLACE THIS URL
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: userMessage }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const newAiMessage: Message = { sender: 'ai', content: data };
+      setMessages(prevMessages => [...prevMessages, newAiMessage]);
+
+    } catch (error) {
+      console.error("Failed to fetch invoice:", error);
+      const errorMessageContent = error instanceof Error ? error.message : "An unknown error occurred.";
+      const errorMessage: Message = { 
+        sender: 'ai', 
+        content: { 
+          invoiceData: { 
+            clientName: "Error", 
+            invoiceDate: "", 
+            lineItems: [{ description: errorMessageContent, quantity: 0, unitPrice: 0 }], 
+            totalAmount: 0 
+          } 
+        } 
+      };
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-900 text-white">
+      <Sidebar />
+      <main className="flex flex-col flex-grow">
+        <div className="flex-grow p-6 overflow-y-auto">
+          <MessageHistory messages={messages} />
+        </div>
+        <ChatInput onSubmit={handleSendMessage} isLoading={isLoading} />
+      </main>
+    </div>
+  );
+}
