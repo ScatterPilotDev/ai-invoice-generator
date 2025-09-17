@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import ChatInput from '@/components/ChatInput';
-import MessageHistory, { Message } from '@/components/MessageHistory';
-import Sidebar from '@/app/components/Sidebar';
+import ChatInput from '@/components/ui/ChatInput';
+import MessageHistory, { Message } from '@/components/ui/MessageHistory';
+import Sidebar from '@/components/ui/Sidebar';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -24,7 +24,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('YOUR_API_GATEWAY_URL/invoices', { // <-- IMPORTANT: REPLACE THIS URL
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/invoices`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: userMessage }),

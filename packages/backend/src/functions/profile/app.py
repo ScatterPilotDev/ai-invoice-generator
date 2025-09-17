@@ -1,32 +1,38 @@
 import json
-import os
-import boto3
-from datetime import datetime
-
-dynamodb = boto3.resource('dynamodb')
-table_name = os.environ.get('DYNAMODB_TABLE')
-table = dynamodb.Table(table_name)
+from common import database, bedrock
 
 def handler(event, context):
     try:
         claims = event['requestContext']['authorizer']['jwt']['claims']
-        user_sub = claims['sub']
-        user_email = claims['email']
+        tenant_pk = f"TENANT#{claims['sub']}"
+        
+        body = json.loads(event.get('body', '{}'))
+        user_message = body.get('message')
+        session_id = body.get('session_id', 'default_session')
+        conversation_sk = f"CONVERSATION#{session_id}"
 
-        item = {
-            'PK': f"TENANT#{user_sub}",
-            'SK': 'PROFILE',
-            'email': user_email,
-            'createdAt': datetime.utcnow().isoformat()
-        }
+        if not user_message:
+            return {"statusCode": 400, "body": json.dumps({"message": "Error: message not provided"})}
 
-        table.put_item(Item=item)
+        # 1. Retrieve history
+        history = database.get_conversation_history(tenant_pk, conversation_sk)
+        
+        # 2. Add user message to history
+        history.append({"role": "user", "content": [{"type": "text", "text": user_message}]})
+
+        # 3. Get AI response
+        ai_response_text = bedrock.get_invoice_assistance(history)
+        history.append({"role": "assistant", "content": [{"type": "text", "text": ai_response_text}]})
+
+        # 4. Save updated history
+        database.save_conversation_history(tenant_pk, conversation_sk, history)
 
         return {
-            "statusCode": 201,
+            "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"message": "Profile created successfully", "userId": user_sub})
+            "body": ai_response_text
         }
+
     except Exception as e:
         print(f"Error: {e}")
         return {"statusCode": 500, "body": json.dumps({"message": "Internal server error"})}
