@@ -22,28 +22,28 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoiceData }) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(amount);
+    }).format(amount || 0); // Added a fallback for safety
   };
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md min-w-[350px]">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-gray-800">{invoiceData.clientName}</h3>
-        <span className="text-sm text-gray-500">{invoiceData.invoiceDate}</span>
+        <h3 className="text-xl font-bold text-gray-800">{invoiceData?.clientName || 'N/A'}</h3>
+        <span className="text-sm text-gray-500">{invoiceData?.invoiceDate || ''}</span>
       </div>
       
       <div className="border-t border-gray-200">
-        {invoiceData.lineItems.map((item, index) => (
+        {(invoiceData?.lineItems || []).map((item, index) => (
           <div key={index} className="flex justify-between py-2 border-b border-gray-100">
-            <span className="text-gray-700">{item.description} ({item.quantity} x {formatCurrency(item.unitPrice)})</span>
-            <span className="font-medium text-gray-800">{formatCurrency(item.quantity * item.unitPrice)}</span>
+            <span className="text-gray-700">{item.description} ({item.quantity || 0} x {formatCurrency(item.unitPrice)})</span>
+            <span className="font-medium text-gray-800">{formatCurrency((item.quantity || 0) * (item.unitPrice || 0))}</span>
           </div>
         ))}
       </div>
 
       <div className="flex justify-between items-center mt-4">
         <span className="text-lg font-bold text-gray-900">Total</span>
-        <span className="text-lg font-bold text-gray-900">{formatCurrency(invoiceData.totalAmount)}</span>
+        <span className="text-lg font-bold text-gray-900">{formatCurrency(invoiceData?.totalAmount || 0)}</span>
       </div>
     </div>
   );

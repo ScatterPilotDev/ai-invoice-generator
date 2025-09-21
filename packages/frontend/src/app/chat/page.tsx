@@ -24,7 +24,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/invoices`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/conversation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: userMessage }),
@@ -35,7 +35,9 @@ export default function ChatPage() {
       }
 
       const data = await response.json();
-      const newAiMessage: Message = { sender: 'ai', content: data };
+      console.log("DATA RECEIVED BY FRONTEND:", data); // <-- ADDED FOR DEBUGGING
+
+      const newAiMessage: Message = { sender: 'ai', content: { invoiceData: data.invoiceData } };
       setMessages(prevMessages => [...prevMessages, newAiMessage]);
 
     } catch (error) {

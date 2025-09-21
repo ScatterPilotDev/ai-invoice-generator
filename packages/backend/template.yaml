@@ -9,10 +9,11 @@ Globals:
     MemorySize: 256
     Runtime: python3.12
     Architectures:
-      - arm64
+      - x86_64
     Environment:
       Variables:
-        DYNAMODB_TABLE: !Ref InvoiceAppTable
+        # To this line
+        DYNAMODB_TABLE: InvoiceApp 
 
 Resources:
   InvoiceAppTable:

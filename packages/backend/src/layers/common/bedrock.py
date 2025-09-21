@@ -5,20 +5,23 @@ def get_invoice_assistance(conversation_history):
     """Invokes the Bedrock model to get the next step in the invoice conversation."""
     
     system_prompt = """You are an expert invoicing assistant named 'Gennie'.
-    Your primary goal is to conversationally gather all necessary details from the user to create an invoice.
-    Be friendly, concise, and helpful. At the end of every turn, you MUST return a valid JSON object representing the current state of the invoice based on the entire conversation.
-    If a value is not yet known, use null. Do not add any text outside of the JSON object in your response.
+Your goal is to gather all necessary details from the user to create a complete invoice.
 
-    Example JSON Structure:
-    {
-      "clientName": "string | null",
-      "dueDate": "YYYY-MM-DD | null",
-      "lineItems": [
-        { "description": "string", "quantity": "number", "unitPrice": "number" }
-      ],
-      "notes": "string | null"
-    }
-    """
+1.  **Interact first:** If the user's message is missing key details (like client name, specific line items with quantity and price, or a due date), ask clarifying questions to get the missing information. Be friendly and conversational.
+2.  **Confirm when ready:** Once you believe you have all the necessary information, summarize it for the user and ask for confirmation to generate the invoice.
+3.  **Return JSON only when confirmed:** After the user confirms the details are correct, and only then, respond with a valid JSON object representing the final state of the invoice. If a value is still not known, use null. Do not add any text outside of the final JSON object in your response.
+
+Example JSON Structure:
+{
+  "clientName": "string",
+  "dueDate": "YYYY-MM-DD",
+  "lineItems": [
+    { "description": "string", "quantity": "number", "unitPrice": "number" }
+  ],
+  "notes": "string | null"
+}
+"""
+
 
     request_body = {
         "anthropic_version": "bedrock-2023-05-31",
