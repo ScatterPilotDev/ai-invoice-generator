@@ -23,9 +23,10 @@ export default function LandingPage() {
   Generate invoices <span className="text-purple-400">{'>'} instantly_</span>
         </h1>
         <p className="text-lg md:text-xl text-gray-400 mb-8">
-          You can't build a business without getting paid. Stop wasting time with templates.
-          Just describe your invoice, and let AI handle the rest.
+        You can&apos;t build a business without getting paid. Stop wasting time with templates.
+        Just describe your invoice, and let AI handle the rest.
         </p>
+
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 justify-center">
           <input
             type="text"

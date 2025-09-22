@@ -16,7 +16,8 @@ export default function ChatPage() {
     if (initialPrompt) {
       handleSendMessage(initialPrompt);
     }
-  }, []);
+}, [searchParams]);
+
 
   const handleSendMessage = async (userMessage: string) => {
     const newUserMessage: Message = { sender: 'user', content: userMessage };

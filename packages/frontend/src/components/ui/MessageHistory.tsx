@@ -2,10 +2,19 @@ import React from 'react';
 import InvoiceCard from './InvoiceCard'; // We will create this component next
 
 // Define the shape of a single message object
+// Define the shape of the invoice data object
+interface InvoiceData {
+  clientName: string;
+  invoiceDate: string;
+  lineItems: { description: string; quantity: number; unitPrice: number }[];
+  totalAmount: number;
+}
+
 export interface Message {
   sender: 'user' | 'ai';
-  content: any; // Can be a string for user messages or invoice data for AI
+  content: string | { invoiceData: InvoiceData }; // Use a specific union type
 }
+
 
 // Define the component's props
 interface MessageHistoryProps {
