@@ -1,13 +1,27 @@
 "use client";
 
-import { Authenticator } from '@aws-amplify/ui-react';
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react'; // 1. Import useEffect
+import { useEffect } from 'react';
+
+// 1. Create a new component to handle the redirect logic
+function Redirector() {
+  const router = useRouter();
+  const { user } = useAuthenticator((context) => [context.user]);
+
+  useEffect(() => {
+    // This hook will run when the user object changes
+    if (user) {
+      router.push('/chat');
+    }
+  }, [user, router]);
+
+  // This component doesn't render anything itself
+  return null;
+}
 
 export default function AuthPage() {
-  const router = useRouter();
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#111111]">
       <Authenticator initialState="signUp" components={{
@@ -19,17 +33,8 @@ export default function AuthPage() {
           );
         },
       }}>
-        {({ user }) => { // 2. Removed unused 'signOut' variable
-          
-          // 3. Use an effect to handle the redirect after login
-          useEffect(() => {
-            if (user) {
-              router.push('/chat');
-            }
-          }, [user, router]);
-
-          return null; // This component just handles the redirect
-        }}
+        {/* 2. Render the new component, which handles its own logic */}
+        <Redirector />
       </Authenticator>
     </div>
   );
