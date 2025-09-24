@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { fetchAuthSession } from 'aws-amplify/auth'; // 1. Import the function
 import ChatInput from '@/components/ui/ChatInput';
 import MessageHistory, { Message } from '@/components/ui/MessageHistory';
 import Sidebar from '@/components/ui/Sidebar';
@@ -24,9 +25,19 @@ export default function ChatClient() {
     setIsLoading(true);
 
     try {
+      // 2. Get the user's auth token
+      const { idToken } = (await fetchAuthSession()).tokens ?? {};
+      if (!idToken) {
+        throw new Error("User is not authenticated.");
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/conversation`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          // 3. Add the token to the Authorization header
+          'Authorization': `Bearer ${idToken.toString()}`
+        },
         body: JSON.stringify({ prompt: userMessage }),
       });
 
