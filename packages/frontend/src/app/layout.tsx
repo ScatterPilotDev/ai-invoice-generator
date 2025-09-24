@@ -20,13 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AmplifyProvider>
-          <Header />
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
-        </AmplifyProvider>
+        {children}
       </body>
     </html>
   );
 }
+
