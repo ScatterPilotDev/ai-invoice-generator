@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ErrorBoundary from "@/components/ui/ErrorBoundary"; // <-- Import it
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import AmplifyProvider from "./AmplifyProvider"; // 1. Import the provider
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,9 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ErrorBoundary> {/* <-- Wrap your children */}
-          {children}
-        </ErrorBoundary>
+        <AmplifyProvider> {/* 2. Wrap the app with it */}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </AmplifyProvider>
       </body>
     </html>
   );
