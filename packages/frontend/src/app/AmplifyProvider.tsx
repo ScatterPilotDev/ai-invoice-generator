@@ -1,6 +1,7 @@
 "use client";
 
 import { Amplify } from "aws-amplify";
+import { Authenticator } from '@aws-amplify/ui-react'; // 1. Import the Authenticator
 
 Amplify.configure({
   Auth: {
@@ -9,8 +10,9 @@ Amplify.configure({
       userPoolClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,
     },
   },
-}, { ssr: true }); // <-- Add ssr: true for Next.js compatibility
+}, { ssr: true });
 
 export default function AmplifyProvider({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  // 2. Wrap children with the provider
+  return <Authenticator.Provider>{children}</Authenticator.Provider>;
 }
