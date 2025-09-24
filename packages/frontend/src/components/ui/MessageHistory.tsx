@@ -39,11 +39,13 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ messages }) => {
                   : 'bg-gray-200 text-gray-800'
               }`}
             >
-              {message.sender === 'user' ? (
-                <p>{message.content}</p>
-              ) : (
-                <InvoiceCard invoiceData={message.content.invoiceData} />
-              )}
+              {message.sender === 'user' && typeof message.content === 'string' ? (
+  <p>{message.content}</p>
+) : (
+  message.sender === 'ai' && typeof message.content === 'object' &&
+  <InvoiceCard invoiceData={message.content.invoiceData} />
+)}
+
             </div>
           </div>
         ))}
