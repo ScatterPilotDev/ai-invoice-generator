@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Header from '@/components/ui/Header'; // 1. Import Header
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
@@ -14,13 +15,14 @@ export default function LandingPage() {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-[#111111] text-white p-4">
+      <Header /> {/* 2. Add Header here */}
       <div className="text-center max-w-3xl">
         <h1 className="text-5xl md:text-7xl font-bold mb-4">
           Transform your coding skills by learning the <span className="text-purple-400">{'>'}fundamentals_</span>
         </h1>
         <p className="text-lg md:text-xl text-gray-400 mb-8">
-  You can&apos;t build anything without a foundation. Learn the core principles of programming with low level languages like C and Assembly.
-</p>
+          You can&apos;t build anything without a foundation. Learn the core principles of programming with low level languages like C and Assembly.
+        </p>
         <form onSubmit={handleGetStarted} className="flex flex-col sm:flex-row gap-4 justify-center max-w-xl mx-auto">
           <input
             type="email"
